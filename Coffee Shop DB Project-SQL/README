@@ -1,0 +1,96 @@
+# ☕ Coffee Shop Database
+
+A relational database project for managing a coffee shop chain — tracking employees, shop locations, cities, and coffee suppliers using plain SQL scripts.
+
+## About
+
+This project builds out a small relational schema for a fictional coffee shop chain. It's organized as a set of individual `.sql` scripts, split by responsibility (table creation, foreign keys, data seeding, updates, and practice queries), intended to be run in sequence to stand up a working database.
+
+## Entity Relationship Overview
+
+```
+LOCATIONS (1) ──── (N) SHOPS
+SHOPS (1) ──── (N) EMPLOYEES
+SHOPS (N) ──── (N) SUPPLIERS
+```
+
+| Table | Purpose | Key Columns |
+|---|---|---|
+| `EMPLOYEES` | Employee records | `employee_id` (PK), `first_name`, `last_name`, `email`, `hire_date`, `gender`, `salary`, `coffee_shop_id` (FK) |
+| `LOCATIONS` | City/country reference data | `city_id` (PK), `city`, `country` |
+| `SHOPS` | Individual coffee shop locations | `coffeeShop_id` (PK), `shop_name`, `city_id` (FK) |
+| `SUPPLIERS` | Coffee suppliers per shop | `coffeeShop_id` (FK), `supplier_name`, `coffee_type` |
+
+## Project Structure
+
+```
+.
+├── Create_table_Employee.sql              # Creates the EMPLOYEES table
+├── Create_table_Locations_Suppliers.sql   # Creates LOCATIONS and SUPPLIERS tables
+├── Create_table_Shops.sql                 # Creates the SHOPS table
+├── Add_ForeignK_cityId-shops.sql          # Adds FK: SHOPS.city_id → LOCATIONS.city_id
+├── Add_ForeignK_shop-employees.sql        # Adds FK: EMPLOYEES.coffee_shop_id → SHOPS.coffeeShop_id
+├── insert_TABLE_location.sql              # Seeds LOCATIONS data
+├── insert_Table_shops.sql                 # Seeds SHOPS data
+├── insert_TABLE_suppliers.sql             # Seeds SUPPLIERS data
+├── updt_emloyee&shop.sql                  # Updates employee-to-shop assignments
+└── practice_query_file.sql                # Sample SELECT queries
+```
+
+## Getting Started
+
+### Prerequisites
+
+- A running SQL database instance (MySQL, PostgreSQL, or similar)
+- A SQL client (CLI, DBeaver, TablePlus, etc.)
+
+### Setup
+
+Run the scripts in the following order to avoid foreign key errors:
+
+```bash
+# 1. Create tables (parent tables first)
+mysql < Create_table_Locations_Suppliers.sql   # LOCATIONS, then SUPPLIERS
+mysql < Create_table_Shops.sql
+mysql < Create_table_Employee.sql
+
+# 2. Add foreign key constraints
+mysql < Add_ForeignK_cityId-shops.sql
+mysql < Add_ForeignK_shop-employees.sql
+
+# 3. Seed data (parents before children)
+mysql < insert_TABLE_location.sql
+mysql < insert_Table_shops.sql
+mysql < insert_TABLE_suppliers.sql
+
+# 4. Apply updates
+mysql < "updt_emloyee&shop.sql"
+
+# 5. Run sample queries
+mysql < practice_query_file.sql
+```
+
+> Replace `mysql <` with your database's equivalent import command (e.g. `psql -f` for PostgreSQL).
+
+## ⚠️ Known Issues
+
+This project is a work in progress. Current gaps to be aware of before running the scripts:
+
+- **`Create_table_Shops.sql` is currently empty.** The `SHOPS` table must exist before `SUPPLIERS`, `Add_ForeignK_*`, and the shop/employee inserts will work.
+- **Both `Add_ForeignK_*.sql` files are currently empty.** The `LOCATIONS → SHOPS` and `SHOPS → EMPLOYEES` relationships are not yet enforced at the database level.
+- **No employee seed data.** `updt_emloyee&shop.sql` updates employee IDs `501559` and `144108`, but no script inserts employees, so the update currently affects zero rows.
+- **Column naming is inconsistent** across scripts: `emplyee_id` (typo) vs. `employee_id`, and `coffeeShop_id` vs. `coffee_shop_id` vs. `coffeeshop_id`. These must match exactly for the scripts to run against the same schema.
+- **Referential gaps in seed data:** `insert_Table_shops.sql` references `city_id` values `2` and `3`, but `insert_TABLE_location.sql` only inserts `city_id = 1`. Once the `LOCATIONS → SHOPS` foreign key is added, these inserts will fail until the missing cities are added.
+
+## Roadmap
+
+- [ ] Add missing `Create_table_Shops.sql` contents
+- [ ] Populate both foreign key scripts
+- [ ] Add an employee seed script
+- [ ] Standardize column naming across all files
+- [ ] Add cities for `city_id` 2 and 3
+- [ ] Expand `practice_query_file.sql` with `JOIN`-based queries across tables
+
+## License
+
+Add a license of your choice (e.g., MIT) here.
